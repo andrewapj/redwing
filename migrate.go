@@ -9,9 +9,11 @@ import (
 	"strings"
 )
 
+//Dialect - A supported database dialect
 type Dialect int
 
 const (
+	//MySQL - The MySQL dialect
 	MySQL Dialect = iota
 )
 
@@ -21,6 +23,8 @@ type sqlProcessor interface {
 	getLastMigration(db *sql.DB) (int, error)
 }
 
+//Migrate starts a database migration given the valid sql.DB,
+// a database dialect and a path containing the migrations.
 func Migrate(db *sql.DB, dbType Dialect, path string) ([]int, error) {
 
 	processor, err := setProcessor(dbType)

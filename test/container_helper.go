@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+//StartContainer starts a container for tests
 func StartContainer(compose []string) string {
 	identifier := strings.ToLower(uuid.New().String())
 	c := tc.NewLocalDockerCompose(compose, identifier)
@@ -23,6 +24,7 @@ func StartContainer(compose []string) string {
 	return identifier
 }
 
+//StopContainer stops a running container
 func StopContainer(compose []string, identifier string) {
 	c := tc.NewLocalDockerCompose(compose, identifier)
 	execError := c.Down()
