@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestMain(m *testing.M)  {
+func TestMain(m *testing.M) {
 
 	identifier := test.StartContainer([]string{"../../db/mysql/docker-compose.yml"})
 	exitVal := m.Run()

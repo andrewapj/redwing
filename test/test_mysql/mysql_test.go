@@ -22,20 +22,20 @@ func TestMySQLMigrate(t *testing.T) {
 	cleanupDB(db)
 
 	// When
-	processed, err := redwing.Migrate(db, redwing.MySQL, migrationsBase + "valid")
+	processed, err := redwing.Migrate(db, redwing.MySQL, migrationsBase+"valid")
 	if err != nil {
 		t.Fatalf("Failed to perform migration: %+v", err)
 	}
 
 	// Then
-	if !reflect.DeepEqual(processed, []int{1,2}) {
+	if !reflect.DeepEqual(processed, []int{1, 2}) {
 		t.Fatalf("Expected 2 migrations, got %d", len(processed))
 	}
 	maxId, err := getLastMigration(db)
 	if err != nil {
 		t.Fatalf("Could not retrieve last migration from table: %v", err)
 	}
-	if maxId != 2{
+	if maxId != 2 {
 		t.Fatalf("Expected the migration table to contain 2 migrations, got %d", maxId)
 	}
 }
@@ -56,10 +56,10 @@ func TestMigrateFromPreviouslyCompleted(t *testing.T) {
 	}
 
 	// When
-	processed, err := redwing.Migrate(db, redwing.MySQL, migrationsBase + "first_broken")
+	processed, err := redwing.Migrate(db, redwing.MySQL, migrationsBase+"first_broken")
 
 	// Then: Only 1 migration (2.sql) should be processed
-	if err != nil{
+	if err != nil {
 		t.Fatalf("Unexpected error processing migration: %v", err)
 	}
 	if !reflect.DeepEqual(processed, []int{2}) {
@@ -78,7 +78,7 @@ func TestFirstMigrationBroken(t *testing.T) {
 	cleanupDB(db)
 
 	// When
-	processed, err := redwing.Migrate(db, redwing.MySQL, migrationsBase + "first_broken")
+	processed, err := redwing.Migrate(db, redwing.MySQL, migrationsBase+"first_broken")
 
 	// Then
 	if err == nil {
@@ -104,7 +104,7 @@ func TestSecondMigrationBroken(t *testing.T) {
 	cleanupDB(db)
 
 	// When
-	processed, err := redwing.Migrate(db, redwing.MySQL, migrationsBase + "second_broken")
+	processed, err := redwing.Migrate(db, redwing.MySQL, migrationsBase+"second_broken")
 
 	// Then
 	if err == nil {
