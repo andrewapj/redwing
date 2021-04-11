@@ -44,6 +44,8 @@ etc...
 
 * If the system encounters a migration that can not be processed it will return an error in addition to the processed
   migrations, if any.
+  
+* Migrations that have already been processed are stored in the migration table and will not be repeated.
 
 ## Migrations table
 
