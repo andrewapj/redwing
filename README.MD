@@ -1,4 +1,5 @@
 # Redwing
+[![Go Report Card](https://goreportcard.com/badge/github.com/andrewapj/redwing)](https://goreportcard.com/report/github.com/andrewapj/redwing)
 
 Simple database migrations for Go
 
