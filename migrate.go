@@ -9,9 +9,6 @@ import (
 	"strings"
 )
 
-var ErrDBNotSupported = errors.New("database not supported")
-var ErrMigrationTableCreate = errors.New("can not create the migration table")
-
 type Dialect int
 
 const (
@@ -32,12 +29,12 @@ func Migrate(db *sql.DB, dbType Dialect, path string) ([]int, error) {
 	}
 
 	if err := processor.createMigrationTable(db); err != nil {
-		return []int{}, ErrMigrationTableCreate
+		return []int{}, err
 	}
 
 	fileNum, err := processor.getLastMigration(db)
 	if err != nil {
-		return []int{}, ErrMigrationTableCreate
+		return []int{}, err
 	}
 
 	processed := make([]int, 0)
@@ -91,7 +88,7 @@ func setProcessor(dbType Dialect) (sqlProcessor, error) {
 	case MySQL:
 		return &mySqlProcessor{}, nil
 	default:
-		return nil, ErrDBNotSupported
+		return nil, errors.New("dialect not supported")
 	}
 }
 
