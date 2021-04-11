@@ -15,9 +15,9 @@ func main() {
 
     if err != nil {
         fmt.Printf("Error processing migrations: %v", err)
-    } else {
-        fmt.Printf("Processed the following migrations: %v", processed)
-    }
+    }  
+    
+    fmt.Printf("Processed the following migrations: %v", processed)
 }
 
 ```
