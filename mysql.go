@@ -38,7 +38,6 @@ func (m *mySqlProcessor) getLastMigration(db *sql.DB) (int, error) {
 	}
 	if maxId.Valid {
 		return int(maxId.Int32), nil
-	} else {
-		return 0, nil
 	}
+	return 0, nil
 }

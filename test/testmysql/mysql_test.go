@@ -1,4 +1,4 @@
-package test_mysql
+package testmysql
 
 import (
 	"database/sql"
