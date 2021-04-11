@@ -2,6 +2,10 @@
 
 Simple database migrations for Go
 
+## Installation
+
+```go get github.com/andrewapj/redwing```
+
 ## Databases
 
 * MySQL
