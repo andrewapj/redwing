@@ -22,7 +22,7 @@ func TestMySQLMigrate(t *testing.T) {
 	cleanupDB(db)
 
 	// When
-	processed, err := redwing.Migrate(db, redwing.MySQL, migrationsBase+"valid")
+	processed, err := redwing.New(db, redwing.MySQL, migrationsBase+"valid").Migrate()
 	if err != nil {
 		t.Fatalf("Failed to perform migration: %+v", err)
 	}
@@ -56,7 +56,7 @@ func TestMigrateFromPreviouslyCompleted(t *testing.T) {
 	}
 
 	// When
-	processed, err := redwing.Migrate(db, redwing.MySQL, migrationsBase+"first_broken")
+	processed, err := redwing.New(db, redwing.MySQL, migrationsBase+"first_broken").Migrate()
 
 	// Then: Only 1 migration (2.sql) should be processed
 	if err != nil {
@@ -78,7 +78,7 @@ func TestFirstMigrationBroken(t *testing.T) {
 	cleanupDB(db)
 
 	// When
-	processed, err := redwing.Migrate(db, redwing.MySQL, migrationsBase+"first_broken")
+	processed, err := redwing.New(db, redwing.MySQL, migrationsBase+"first_broken").Migrate()
 
 	// Then
 	if err == nil {
@@ -104,7 +104,7 @@ func TestSecondMigrationBroken(t *testing.T) {
 	cleanupDB(db)
 
 	// When
-	processed, err := redwing.Migrate(db, redwing.MySQL, migrationsBase+"second_broken")
+	processed, err := redwing.New(db, redwing.MySQL, migrationsBase+"second_broken").Migrate()
 
 	// Then
 	if err == nil {
@@ -130,7 +130,7 @@ func TestNoMigrationsInPath(t *testing.T) {
 	cleanupDB(db)
 
 	// When
-	processed, err := redwing.Migrate(db, redwing.MySQL, migrationsBase+"empty")
+	processed, err := redwing.New(db, redwing.MySQL, migrationsBase+"empty").Migrate()
 	if err != nil {
 		t.Fatalf("Failed to perform migration: %+v", err)
 	}

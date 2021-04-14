@@ -9,13 +9,21 @@ import (
 	"strings"
 )
 
-//Dialect - A supported database dialect
-type Dialect int
+//Redwing is the main struct for carrying out the migration
+type Redwing struct {
+	db      *sql.DB
+	dialect Dialect
+	path    string
+}
 
-const (
-	//MySQL - The MySQL dialect
-	MySQL Dialect = iota
-)
+//New creates a Redwing struct with mandatory parameters
+func New(db *sql.DB, dialect Dialect, path string) *Redwing {
+	return &Redwing{
+		db:      db,
+		dialect: dialect,
+		path:    path,
+	}
+}
 
 type sqlProcessor interface {
 	createMigrationTable(db *sql.DB) error
@@ -25,18 +33,18 @@ type sqlProcessor interface {
 
 //Migrate starts a database migration given the valid sql.DB,
 // a database dialect and a path containing the migrations.
-func Migrate(db *sql.DB, dbType Dialect, path string) ([]int, error) {
+func (r *Redwing) Migrate() ([]int, error) {
 
-	processor, err := setProcessor(dbType)
+	processor, err := setProcessor(r.dialect)
 	if err != nil {
 		return []int{}, err
 	}
 
-	if err := processor.createMigrationTable(db); err != nil {
+	if err := processor.createMigrationTable(r.db); err != nil {
 		return []int{}, err
 	}
 
-	fileNum, err := processor.getLastMigration(db)
+	fileNum, err := processor.getLastMigration(r.db)
 	if err != nil {
 		return []int{}, err
 	}
@@ -46,11 +54,11 @@ func Migrate(db *sql.DB, dbType Dialect, path string) ([]int, error) {
 		fileNum++
 		fileName := strconv.Itoa(fileNum) + ".sql"
 
-		fileContent, err := fileContents(filepath.Clean(path + "/" + fileName))
+		fileContent, err := fileContents(filepath.Clean(r.path + "/" + fileName))
 		if err != nil {
 			break
 		}
-		err = executeMigration(db, fileContent, processor, fileNum)
+		err = executeMigration(r.db, fileContent, processor, fileNum)
 		if err != nil {
 			return processed, err
 		}
