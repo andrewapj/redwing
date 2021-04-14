@@ -16,7 +16,9 @@ Simple database migrations for Go
 ```go
 func main() {
     db, _ := sql.Open("mysql", "user:pass@tcp(host:port)/schema")
-    processed, err := redwing.Migrate(db, redwing.MySQL, "migrations/")
+    defer db.Close()
+
+    processed, err := redwing.New(db, redwing.MySQL, "migrations/").Migrate()
 
     if err != nil {
         fmt.Printf("Error processing migrations: %v", err)
