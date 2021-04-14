@@ -2,8 +2,6 @@ package redwing
 
 import (
 	"database/sql"
-	"errors"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -23,12 +21,6 @@ func New(db *sql.DB, dialect Dialect, path string) *Redwing {
 		dialect: dialect,
 		path:    path,
 	}
-}
-
-type sqlProcessor interface {
-	createMigrationTable(db *sql.DB) error
-	updateMigrationTable(tx *sql.Tx, fileNum int) error
-	getLastMigration(db *sql.DB) (int, error)
 }
 
 //Migrate starts a database migration given the valid sql.DB,
@@ -92,22 +84,4 @@ func executeMigration(db *sql.DB, content string, processor sqlProcessor, fileNu
 	}
 
 	return tx.Commit()
-}
-
-func setProcessor(dbType Dialect) (sqlProcessor, error) {
-
-	switch dbType {
-	case MySQL:
-		return &mySqlProcessor{}, nil
-	default:
-		return nil, errors.New("dialect not supported")
-	}
-}
-
-func fileContents(path string) (string, error) {
-	contents, err := os.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-	return string(contents), nil
 }
