@@ -171,7 +171,7 @@ func getLastMigration(db *sql.DB) (int, error) {
 }
 
 func cleanupDB(db *sql.DB) {
-	_, _ = db.Exec("TRUNCATE TABLE redwing_migrate")
+	_, _ = db.Exec("DROP TABLE redwing_migrate")
 	_, _ = db.Exec("DROP TABLE table1")
 	_, _ = db.Exec("DROP TABLE table2")
 }
