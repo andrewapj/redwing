@@ -11,8 +11,8 @@ import (
 //redwing is the main struct for carrying out the migration
 type redwing struct {
 	db      *sql.DB
-	dialect Dialect
 	path    string
+	dialect Dialect
 }
 
 //New creates a redwing struct with mandatory parameters

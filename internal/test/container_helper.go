@@ -15,7 +15,7 @@ func StartContainer(compose []string) string {
 	c := tc.NewLocalDockerCompose(compose, identifier)
 
 	execError := c.WithCommand([]string{"up", "-d"}).Invoke()
-	time.Sleep(time.Second * 10)
+	time.Sleep(time.Second * 20)
 
 	if execError.Error != nil {
 		fmt.Printf("Error starting container: %s : %v", compose, execError.Error)
