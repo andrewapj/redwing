@@ -15,15 +15,18 @@ Simple database migrations for Go
 
 ```go
 func main() {
-    db, _ := sql.Open("mysql", "user:pass@tcp(host:port)/schema")
-    defer db.Close()
-
-    processed, err := redwing.New(db, redwing.MySQL, "migrations/").Migrate()
-
+    db, err := sql.Open("mysql", "user:pass@tcp(host:port)/schema")
     if err != nil {
-        fmt.Printf("Error processing migrations: %v", err)
+        panic("Can't connect to the DB")
     }
-
+    defer db.Close()
+	
+    processed, err := redwing.New(db, redwing.MySQL, "migrations/").Migrate()
+	
+    if err != nil {
+        fmt.Printf("Error processing migrations: %v\n", err)
+    }
+	
     fmt.Printf("Processed the following migrations: %v", processed)
 }
 
@@ -34,6 +37,19 @@ func main() {
 * The ```Migrate``` function will return a ```[]int```. This contains the numbers representing the migrations
   successfully processed.
 * The ```Migrate``` function will also return an error if a migration fails.
+
+## Options
+
+It's possible to add extra optional settings to the migration.
+These are accessed by calling the ```with``` methods.
+
+For example:
+```go
+processed, err := redwing.
+    New(db, redwing.MySQL, "internal/test/test_migrations/mysql/valid").
+    WithLogging(true).
+    Migrate()
+```
 
 ## Migrations
 

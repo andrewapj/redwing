@@ -3,11 +3,11 @@ package redwing
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	l "log"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 )
 
 //ErrDialectNotSupported is an error returned when a dialect is not supported
@@ -40,6 +40,7 @@ func New(db *sql.DB, dialect Dialect, path string) *redwing {
 	}
 }
 
+//WithLogging allows logging to be turned on or off
 func (r *redwing) WithLogging(b bool) *redwing {
 	if b == true {
 		r.options.logging = true
@@ -53,30 +54,26 @@ func (r *redwing) Migrate() ([]int, error) {
 
 	processor, err := setProcessor(r.dialect)
 	if err != nil {
-		r.log(ErrDialectNotSupported.Error())
 		return []int{}, err
 	}
 
 	err = checkPathExists(r.path)
 	if err != nil {
-		r.log(ErrPathNotFound.Error())
 		return nil, err
 	}
 
 	if err := processor.createMigrationTable(r.db); err != nil {
-		r.log("Error creating the migration table")
 		return []int{}, err
 	}
 
 	fileNum, err := processor.getLastMigration(r.db)
 	if err != nil {
-		r.log("Could not read the last migration from the migration table")
 		return []int{}, err
 	}
-	r.log("Found %d previous migration(s)", fileNum)
+	r.log(fmt.Sprintf("Found %d previous migrations", fileNum))
 
 	absPath, _ := filepath.Abs(r.path)
-	r.log("Processing any valid migrations in: %s", absPath)
+	r.log(fmt.Sprintf("Processing any valid migrations in: %s", absPath))
 	processed := make([]int, 0)
 	for {
 		fileNum++
@@ -93,6 +90,7 @@ func (r *redwing) Migrate() ([]int, error) {
 		processed = append(processed, fileNum)
 	}
 
+	r.log(fmt.Sprintf("Processed %d new migrations", len(processed)))
 	return processed, nil
 }
 
@@ -122,9 +120,8 @@ func executeMigration(db *sql.DB, content string, processor sqlProcessor, fileNu
 	return tx.Commit()
 }
 
-func (r *redwing) log(s string, v ...interface{}) {
+func (r *redwing) log(s string) {
 	if r.options.logging {
-		l.Printf(time.Now().Format(time.RFC3339)+" "+s, v)
-		l.Println()
+		l.Printf("Redwing: " + s)
 	}
 }
