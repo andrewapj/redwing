@@ -2,7 +2,6 @@ package redwing
 
 import (
 	"database/sql"
-	"errors"
 )
 
 type sqlProcessor interface {
@@ -12,11 +11,10 @@ type sqlProcessor interface {
 }
 
 func setProcessor(dbType Dialect) (sqlProcessor, error) {
-
 	switch dbType {
 	case MySQL:
 		return &mySqlProcessor{}, nil
 	default:
-		return nil, errors.New("dialect not supported")
+		return nil, ErrDialectNotSupported
 	}
 }
