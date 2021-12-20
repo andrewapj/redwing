@@ -42,6 +42,7 @@ fmt.Printf("Processed the following migrations: %v", processed)
 * The ```Migrate``` function will return a ```[]int```. This contains the numbers representing the migrations
   successfully processed.
 * The ```Migrate``` function will also return an error if a migration fails.
+* Further examples can be found at [redwing_examples](https://github.com/andrewapj/redwing_examples)
 
 ## Migrations
 
