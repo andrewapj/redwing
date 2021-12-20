@@ -4,8 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	l "log"
-	"path/filepath"
+	"io/fs"
 	"strconv"
 	"strings"
 )
@@ -13,84 +12,47 @@ import (
 //ErrDialectNotSupported is an error returned when a dialect is not supported
 var ErrDialectNotSupported = errors.New("dialect not supported")
 
-//ErrPathNotFound is an error returned when the migrations path could not be found
-var ErrPathNotFound = errors.New("path not found")
-
-//redwing is the main struct for carrying out the migration
-type redwing struct {
-	db      *sql.DB
-	path    string
-	dialect Dialect
-	options redwingOptions
-}
-
-type redwingOptions struct {
+//Options allows the user to provide extra optional parameters for the migration
+type Options struct {
 	logging bool
 }
 
-//New creates a redwing struct with mandatory parameters
-func New(db *sql.DB, dialect Dialect, path string) *redwing {
-	return &redwing{
-		db:      db,
-		dialect: dialect,
-		path:    path,
-		options: redwingOptions{
-			logging: false,
-		},
-	}
-}
+//Migrate starts a database migration
+func Migrate(db *sql.DB, dialect Dialect, f fs.FS, options *Options) ([]int, error) {
 
-//WithLogging allows logging to be turned on or off
-func (r *redwing) WithLogging(b bool) *redwing {
-	if b == true {
-		r.options.logging = true
-	}
-	return r
-}
-
-//Migrate starts a database migration given the valid sql.DB,
-// a database Dialect and a path containing the migrations.
-func (r *redwing) Migrate() ([]int, error) {
-
-	processor, err := setProcessor(r.dialect)
+	processor, err := setProcessor(dialect)
 	if err != nil {
 		return []int{}, err
 	}
 
-	err = checkPathExists(r.path)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := processor.createMigrationTable(r.db); err != nil {
+	if err := processor.createMigrationTable(db); err != nil {
 		return []int{}, err
 	}
 
-	fileNum, err := processor.getLastMigration(r.db)
+	fileNum, err := processor.getLastMigration(db)
 	if err != nil {
 		return []int{}, err
 	}
-	r.log(fmt.Sprintf("Found %d previous migrations", fileNum))
+	PrintLog(fmt.Sprintf("Found %d previous migrations", fileNum), options)
 
-	absPath, _ := filepath.Abs(r.path)
-	r.log(fmt.Sprintf("Processing any valid migrations in: %s", absPath))
+	PrintLog(fmt.Sprintf("Processing any valid migrations"), options)
 	processed := make([]int, 0)
 	for {
 		fileNum++
 		fileName := strconv.Itoa(fileNum) + ".sql"
 
-		fileContent, err := fileContents(filepath.Clean(r.path + "/" + fileName))
+		fileContent, err := fileContents(f, fileName)
 		if err != nil {
 			break
 		}
-		err = executeMigration(r.db, fileContent, processor, fileNum)
+		err = executeMigration(db, fileContent, processor, fileNum)
 		if err != nil {
 			return processed, err
 		}
 		processed = append(processed, fileNum)
 	}
 
-	r.log(fmt.Sprintf("Processed %d new migrations", len(processed)))
+	PrintLog(fmt.Sprintf("Processed %d new migrations", len(processed)), options)
 	return processed, nil
 }
 
@@ -118,10 +80,4 @@ func executeMigration(db *sql.DB, content string, processor sqlProcessor, fileNu
 	}
 
 	return tx.Commit()
-}
-
-func (r *redwing) log(s string) {
-	if r.options.logging {
-		l.Printf("Redwing: " + s)
-	}
 }

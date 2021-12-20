@@ -1,19 +1,13 @@
 package redwing
 
-import "os"
+import (
+	"io/fs"
+)
 
-func fileContents(path string) (string, error) {
-	contents, err := os.ReadFile(path)
+func fileContents(fileSystem fs.FS, file string) (string, error) {
+	contents, err := fs.ReadFile(fileSystem, file)
 	if err != nil {
 		return "", err
 	}
 	return string(contents), nil
-}
-
-func checkPathExists(path string) error {
-	_, err := os.ReadDir(path)
-	if err != nil {
-		return ErrPathNotFound
-	}
-	return nil
 }

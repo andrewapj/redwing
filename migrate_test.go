@@ -1,20 +1,14 @@
 package redwing
 
-import "testing"
+import (
+	"database/sql"
+	"embed"
+	"testing"
+)
 
 func TestDialectNotSupported(t *testing.T) {
-	r := redwing{dialect: 99}
-	_, err := r.Migrate()
+	_, err := Migrate(&sql.DB{}, Dialect(999), &embed.FS{}, &Options{})
 	if err != ErrDialectNotSupported {
 		t.Fatalf("Expected a ErrDialectNotSupported error")
-	}
-}
-
-func TestPathNotFound(t *testing.T) {
-	r := redwing{dialect: MySQL, path: "missing/"}
-	_, err := r.Migrate()
-
-	if err != ErrPathNotFound {
-		t.Fatalf("Expected a path not found error for a missing path")
 	}
 }

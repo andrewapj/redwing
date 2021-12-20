@@ -3,23 +3,23 @@ package test
 import (
 	"database/sql"
 	"github.com/andrewapj/redwing"
+	"os"
 	"reflect"
 	"testing"
 )
 
-//TestDatabase is an interface that contains helper methods that should be implemented by a struct representing a
+//Database is an interface that contains helper methods that should be implemented by a struct representing a
 //database under test.
-type TestDatabase interface {
+type Database interface {
 	OpenDB() (db *sql.DB, err error)
-	GetMigrationsBase() string
 	GetDialect() redwing.Dialect
 	CreateMigrationTableWithData(db *sql.DB) error
 	GetLastMigration(db *sql.DB) (int, error)
 	CleanupDB(db *sql.DB)
 }
 
-//TestMigrate checks that a migration works
-func TestMigrate(t *testing.T, td TestDatabase) {
+//Migrate checks that a migration works
+func Migrate(t *testing.T, td Database) {
 
 	// Given
 	db, err := td.OpenDB()
@@ -30,7 +30,7 @@ func TestMigrate(t *testing.T, td TestDatabase) {
 	td.CleanupDB(db)
 
 	// When
-	processed, err := redwing.New(db, td.GetDialect(), td.GetMigrationsBase()+"valid").Migrate()
+	processed, err := redwing.Migrate(db, td.GetDialect(), os.DirFS("test_migrations/mysql/valid"), &redwing.Options{})
 	if err != nil {
 		t.Fatalf("Failed to perform migration: %+v", err)
 	}
@@ -48,8 +48,8 @@ func TestMigrate(t *testing.T, td TestDatabase) {
 	}
 }
 
-//TestMigrateAfterPreviouslyCompleted checks that a new migration works and starts off after the previous migration.
-func TestMigrateAfterPreviouslyCompleted(t *testing.T, td TestDatabase) {
+//MigrateAfterPreviouslyCompleted checks that a new migration works and starts off after the previous migration.
+func MigrateAfterPreviouslyCompleted(t *testing.T, td Database) {
 	// Given
 	db, err := td.OpenDB()
 	if err != nil {
@@ -65,7 +65,7 @@ func TestMigrateAfterPreviouslyCompleted(t *testing.T, td TestDatabase) {
 	}
 
 	// When
-	processed, err := redwing.New(db, td.GetDialect(), td.GetMigrationsBase()+"valid").Migrate()
+	processed, err := redwing.Migrate(db, td.GetDialect(), os.DirFS("test_migrations/mysql/valid"), &redwing.Options{})
 
 	// Then: Only 1 migration (2.sql) should be processed
 	if err != nil {
@@ -76,9 +76,9 @@ func TestMigrateAfterPreviouslyCompleted(t *testing.T, td TestDatabase) {
 	}
 }
 
-//TestFirstMigrationBroken checks that if the first migration breaks that the correct data is returned and that the
+//FirstMigrationBroken checks that if the first migration breaks that the correct data is returned and that the
 //migrations table is correct
-func TestFirstMigrationBroken(t *testing.T, td TestDatabase) {
+func FirstMigrationBroken(t *testing.T, td Database) {
 
 	// Given
 	db, err := td.OpenDB()
@@ -89,7 +89,7 @@ func TestFirstMigrationBroken(t *testing.T, td TestDatabase) {
 	td.CleanupDB(db)
 
 	// When
-	processed, err := redwing.New(db, td.GetDialect(), td.GetMigrationsBase()+"first_broken").Migrate()
+	processed, err := redwing.Migrate(db, td.GetDialect(), os.DirFS("test_migrations/mysql/first_broken"), &redwing.Options{})
 
 	// Then
 	if err == nil {
@@ -104,9 +104,9 @@ func TestFirstMigrationBroken(t *testing.T, td TestDatabase) {
 	}
 }
 
-//TestSecondMigrationBroken checks that if the second migration fails that the correct data is returned and that the
+//SecondMigrationBroken checks that if the second migration fails that the correct data is returned and that the
 //migrations table is correct
-func TestSecondMigrationBroken(t *testing.T, td TestDatabase) {
+func SecondMigrationBroken(t *testing.T, td Database) {
 
 	// Given
 	db, err := td.OpenDB()
@@ -117,7 +117,7 @@ func TestSecondMigrationBroken(t *testing.T, td TestDatabase) {
 	td.CleanupDB(db)
 
 	// When
-	processed, err := redwing.New(db, td.GetDialect(), td.GetMigrationsBase()+"second_broken").Migrate()
+	processed, err := redwing.Migrate(db, td.GetDialect(), os.DirFS("test_migrations/mysql/second_broken"), &redwing.Options{})
 
 	// Then
 	if err == nil {
@@ -132,8 +132,8 @@ func TestSecondMigrationBroken(t *testing.T, td TestDatabase) {
 	}
 }
 
-//TestNoMigrationsInPath checks that no action is taken if there are no migrations to process
-func TestNoMigrationsInPath(t *testing.T, td TestDatabase) {
+//NoMigrationsInPath checks that no action is taken if there are no migrations to process
+func NoMigrationsInPath(t *testing.T, td Database) {
 
 	// Given
 	db, err := td.OpenDB()
@@ -144,7 +144,7 @@ func TestNoMigrationsInPath(t *testing.T, td TestDatabase) {
 	td.CleanupDB(db)
 
 	// When
-	processed, err := redwing.New(db, td.GetDialect(), td.GetMigrationsBase()+"empty").Migrate()
+	processed, err := redwing.Migrate(db, td.GetDialect(), os.DirFS("test_migrations/mysql/empty"), &redwing.Options{})
 	if err != nil {
 		t.Fatalf("Failed to perform migration: %+v", err)
 	}

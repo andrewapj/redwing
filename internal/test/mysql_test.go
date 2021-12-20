@@ -1,21 +1,17 @@
-package testmysql
+package test
 
 import (
 	"database/sql"
 	"github.com/andrewapj/redwing"
-	"github.com/andrewapj/redwing/internal/test"
 	_ "github.com/go-sql-driver/mysql"
 	"testing"
 )
 
+//Implementation of a Database for MySQL
 type testMySQLDatabase struct{}
 
 func (m *testMySQLDatabase) OpenDB() (db *sql.DB, err error) {
 	return sql.Open("mysql", "redwing:redwing@tcp(127.0.0.1:3306)/redwing")
-}
-
-func (m *testMySQLDatabase) GetMigrationsBase() string {
-	return "../test_migrations/mysql/"
 }
 
 func (m *testMySQLDatabase) GetDialect() redwing.Dialect {
@@ -56,21 +52,21 @@ func (m *testMySQLDatabase) CleanupDB(db *sql.DB) {
 }
 
 func TestMySQLMigrate(t *testing.T) {
-	test.TestMigrate(t, &testMySQLDatabase{})
+	Migrate(t, &testMySQLDatabase{})
 }
 
 func TestMySQLMigrateAfterPreviouslyCompleted(t *testing.T) {
-	test.TestMigrateAfterPreviouslyCompleted(t, &testMySQLDatabase{})
+	MigrateAfterPreviouslyCompleted(t, &testMySQLDatabase{})
 }
 
 func TestMySQLFirstMigrationBroken(t *testing.T) {
-	test.TestFirstMigrationBroken(t, &testMySQLDatabase{})
+	FirstMigrationBroken(t, &testMySQLDatabase{})
 }
 
 func TestMySQLSecondMigrationBroken(t *testing.T) {
-	test.TestSecondMigrationBroken(t, &testMySQLDatabase{})
+	SecondMigrationBroken(t, &testMySQLDatabase{})
 }
 
 func TestMySQLNoMigrationsInPath(t *testing.T) {
-	test.TestNoMigrationsInPath(t, &testMySQLDatabase{})
+	NoMigrationsInPath(t, &testMySQLDatabase{})
 }

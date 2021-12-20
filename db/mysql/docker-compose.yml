@@ -1,6 +1,6 @@
 services:
   db:
-    image: mysql:8.0.23
+    image: mysql:latest
     environment:
       MYSQL_ROOT_PASSWORD: redwing
       MYSQL_USER: redwing
