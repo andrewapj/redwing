@@ -14,7 +14,7 @@ var ErrDialectNotSupported = errors.New("dialect not supported")
 
 //Options allows the user to provide extra optional parameters for the migration
 type Options struct {
-	logging bool
+	Logging bool
 }
 
 //Migrate starts a database migration
@@ -26,11 +26,13 @@ func Migrate(db *sql.DB, dialect Dialect, f fs.FS, options *Options) ([]int, err
 	}
 
 	if err := processor.createMigrationTable(db); err != nil {
+		PrintLog("Unable to create migration table", options)
 		return []int{}, err
 	}
 
 	fileNum, err := processor.getLastMigration(db)
 	if err != nil {
+		PrintLog("Unable to retrieve last migration", options)
 		return []int{}, err
 	}
 	PrintLog(fmt.Sprintf("Found %d previous migrations", fileNum), options)
@@ -43,6 +45,7 @@ func Migrate(db *sql.DB, dialect Dialect, f fs.FS, options *Options) ([]int, err
 
 		fileContent, err := fileContents(f, fileName)
 		if err != nil {
+			PrintLog(err.Error(), options)
 			break
 		}
 		err = executeMigration(db, fileContent, processor, fileNum)
