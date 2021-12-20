@@ -15,21 +15,25 @@ Simple database migrations for Go
 ## Example usage
 
 ```go
+var (
+//go:embed migrations
+migrations embed.FS
+)
+
 func main() {
-    db, err := sql.Open("mysql", "user:pass@tcp(host:port)/schema")
-    if err != nil {
-        panic("Can't connect to the DB")
-    }
-    defer db.Close()
-	
-    processed, err := redwing.New(db, redwing.MySQL, "migrations/").Migrate()
-	
-    if err != nil {
-        fmt.Printf("Error processing migrations: %v\n", err)
-    }
-	
-    fmt.Printf("Processed the following migrations: %v", processed)
+db, err := sql.Open("mysql", "redwing:redwing@tcp(127.0.0.1:3306)/redwing")
+if err != nil {
+panic("Can't connect to the DB")
 }
+defer db.Close()
+
+processed, err := redwing.Migrate(db, redwing.MySQL, migrations, &redwing.Options{Logging: true})
+
+if err != nil {
+fmt.Printf("Error processing migrations: %v\n", err)
+}
+
+fmt.Printf("Processed the following migrations: %v", processed)
 
 ```
 
@@ -39,22 +43,9 @@ func main() {
   successfully processed.
 * The ```Migrate``` function will also return an error if a migration fails.
 
-## Options
-
-It's possible to add extra optional settings to the migration. These are accessed by calling the ```with``` methods.
-
-For example:
-
-```go
-processed, err := redwing.
-    New(db, redwing.MySQL, "internal/test/test_migrations/mysql/valid").
-    WithLogging(true).
-    Migrate()
-```
-
 ## Migrations
 
-Migrations should be stored in a single directory in the following format:
+Migrations should be stored in the following format:
 
 ```
 1.sql
